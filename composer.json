@@ -1,0 +1,25 @@
+{
+    "name": "posapp-vn/laravel-lark-logging",
+    "description": "A Laravel package for logging to Lark bot",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["laravel", "lark", "larksuite", "logging", "monolog"],
+    "autoload": {
+        "psr-4": {
+            "PosAppVN\\LarkLogger\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=8.2",
+        "monolog/monolog": ">=3.2",
+        "illuminate/support": "^8.0|^9.0|^10.0|^11.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "PosAppVN\\LarkLogger\\LarkLoggerServiceProvider"
+            ]
+        }
+    }
+}
