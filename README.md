@@ -34,7 +34,7 @@ php artisan vendor:publish --provider "PosAppVN\LarkLogger\LarkLoggerServiceProv
 
 ## Create bot
 
-For using this package you need to create Telegram bot: https://open.larksuite.com/document/client-docs/bot-v3/add-custom-bot
+For using this package you need to create Lark bot: https://open.larksuite.com/document/client-docs/bot-v3/add-custom-bot
 
 ## Configuring a different chat id or token per channel
 
