@@ -102,7 +102,8 @@ class LarkHandler extends AbstractProcessingHandler
     {
         $message = preg_replace('/\s+/', ' ', trim($record->message));
 
-        return '[' . $record->level->getName() . '] ' . Str::limit($message, 100);
+        return $this->getTitle() . "\n"
+            . '[' . $record->level->getName() . '] ' . Str::limit($message, 100);
     }
 
     /**
