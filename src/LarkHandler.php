@@ -65,38 +65,44 @@ class LarkHandler extends AbstractProcessingHandler
      */
     private function buildPostData(LogRecord $record): array
     {
-        $header = [
-            'template' => $this->larkRecord->getTitleColor($record->level),
-            'title' => [
-                'content' => $this->getTitle(),
-                'tag' => 'plain_text',
-            ],
-        ];
-
-        // Lark uses the card header title as the push notification text,
-        // so put the log message there and move the configured title to the subtitle.
-        if ($this->isMessageInTitle()) {
-            $message = preg_replace('/\s+/', ' ', trim($record->message));
-
-            $header['title']['content'] = '[' . $record->level->getName() . '] ' . Str::limit($message, 100);
-            $header['subtitle'] = [
-                'content' => $this->getTitle(),
-                'tag' => 'plain_text',
-            ];
-        }
-
         return [
             'msg_type' => 'interactive',
             'card' => [
-                'elements' => [
-                    [
-                        'tag' => 'markdown',
-                        'content' => $this->larkRecord->getLarkData($record),
+                'schema' => '2.0',
+                'config' => [
+                    // Text shown in the chat list preview and mobile push notification
+                    'summary' => [
+                        'content' => $this->buildSummary($record),
                     ],
                 ],
-                'header' => $header,
+                'body' => [
+                    'elements' => [
+                        [
+                            'tag' => 'markdown',
+                            'content' => $this->larkRecord->getLarkData($record),
+                        ],
+                    ],
+                ],
+                'header' => [
+                    'template' => $this->larkRecord->getTitleColor($record->level),
+                    'title' => [
+                        'content' => $this->getTitle(),
+                        'tag' => 'plain_text',
+                    ],
+                ],
             ],
         ];
+    }
+
+    /**
+     * @param LogRecord $record
+     * @return string
+     */
+    private function buildSummary(LogRecord $record): string
+    {
+        $message = preg_replace('/\s+/', ' ', trim($record->message));
+
+        return '[' . $record->level->getName() . '] ' . Str::limit($message, 100);
     }
 
     /**
@@ -124,23 +130,6 @@ class LarkHandler extends AbstractProcessingHandler
         }
 
         return config($defaultConfigKey ?: "lark-logger.$key");
-    }
-
-    /**
-     * Whether the log message should be shown in the card header title
-     * (and therefore in the mobile push notification).
-     *
-     * @return bool
-     */
-    private function isMessageInTitle(): bool
-    {
-        $value = $this->getConfigValue('message_in_title');
-
-        if ($value === null) {
-            return true;
-        }
-
-        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**

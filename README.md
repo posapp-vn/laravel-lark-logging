@@ -32,20 +32,6 @@ Publish config file
 php artisan vendor:publish --provider "PosAppVN\LarkLogger\LarkLoggerServiceProvider"
 ```
 
-## Message in push notification
-
-Lark mobile push notifications for card messages only show the card header title.
-By default the header title is `[LEVEL] message` (e.g. `[ERROR] Rejected internal system request: invalid token.`)
-and the configured `title` is shown as the header subtitle, so the notification shows the actual log message.
-
-To keep the old behaviour (configured `title` in the header), set in `.env`:
-
-```
-LARK_MESSAGE_IN_TITLE=false
-```
-
-or per channel in `config/logging.php`: `'message_in_title' => false`.
-
 ## Create bot
 
 For using this package you need to create Lark bot: https://open.larksuite.com/document/client-docs/bot-v3/add-custom-bot
