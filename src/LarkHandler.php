@@ -4,6 +4,7 @@ namespace PosAppVN\LarkLogger;
 
 use Exception;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
@@ -67,10 +68,19 @@ class LarkHandler extends AbstractProcessingHandler
         return [
             'msg_type' => 'interactive',
             'card' => [
-                'elements' => [
-                    [
-                        'tag' => 'markdown',
-                        'content' => $this->larkRecord->getLarkData($record),
+                'schema' => '2.0',
+                'config' => [
+                    // Text shown in the chat list preview and mobile push notification
+                    'summary' => [
+                        'content' => $this->buildSummary($record),
+                    ],
+                ],
+                'body' => [
+                    'elements' => [
+                        [
+                            'tag' => 'markdown',
+                            'content' => $this->larkRecord->getLarkData($record),
+                        ],
                     ],
                 ],
                 'header' => [
@@ -82,6 +92,18 @@ class LarkHandler extends AbstractProcessingHandler
                 ],
             ],
         ];
+    }
+
+    /**
+     * @param LogRecord $record
+     * @return string
+     */
+    private function buildSummary(LogRecord $record): string
+    {
+        $message = preg_replace('/\s+/', ' ', trim($record->message));
+
+        return $this->getTitle() . "\n"
+            . '[' . $record->level->getName() . '] ' . Str::limit($message, 100);
     }
 
     /**
