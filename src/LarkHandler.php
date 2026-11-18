@@ -4,6 +4,7 @@ namespace PosAppVN\LarkLogger;
 
 use Exception;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
@@ -64,6 +65,26 @@ class LarkHandler extends AbstractProcessingHandler
      */
     private function buildPostData(LogRecord $record): array
     {
+        $header = [
+            'template' => $this->larkRecord->getTitleColor($record->level),
+            'title' => [
+                'content' => $this->getTitle(),
+                'tag' => 'plain_text',
+            ],
+        ];
+
+        // Lark uses the card header title as the push notification text,
+        // so put the log message there and move the configured title to the subtitle.
+        if ($this->isMessageInTitle()) {
+            $message = preg_replace('/\s+/', ' ', trim($record->message));
+
+            $header['title']['content'] = '[' . $record->level->getName() . '] ' . Str::limit($message, 100);
+            $header['subtitle'] = [
+                'content' => $this->getTitle(),
+                'tag' => 'plain_text',
+            ];
+        }
+
         return [
             'msg_type' => 'interactive',
             'card' => [
@@ -73,13 +94,7 @@ class LarkHandler extends AbstractProcessingHandler
                         'content' => $this->larkRecord->getLarkData($record),
                     ],
                 ],
-                'header' => [
-                    'template' => $this->larkRecord->getTitleColor($record->level),
-                    'title' => [
-                        'content' => $this->getTitle(),
-                        'tag' => 'plain_text',
-                    ],
-                ],
+                'header' => $header,
             ],
         ];
     }
@@ -109,6 +124,23 @@ class LarkHandler extends AbstractProcessingHandler
         }
 
         return config($defaultConfigKey ?: "lark-logger.$key");
+    }
+
+    /**
+     * Whether the log message should be shown in the card header title
+     * (and therefore in the mobile push notification).
+     *
+     * @return bool
+     */
+    private function isMessageInTitle(): bool
+    {
+        $value = $this->getConfigValue('message_in_title');
+
+        if ($value === null) {
+            return true;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
